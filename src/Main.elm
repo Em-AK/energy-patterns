@@ -8,20 +8,24 @@ import Html.Attributes exposing (src)
 ---- MODEL ----
 
 
-type alias Model =
-    { peakHours : Int
-    , offPeakHours : Int
+type alias Metering =
+    { peakHoursConsumption : Int
+    , offPeakHoursConsumption : Int
     }
 
 
-init : ( Model, Cmd Msg )
+init : ( Metering, Cmd Msg )
 init =
-    ( { peakHours = 35215, offPeakHours = 17438 }, Cmd.none )
+    ( { peakHoursConsumption = 35215
+      , offPeakHoursConsumption = 17438
+      }
+    , Cmd.none
+    )
 
 
-totalConsumption : Model -> Int
-totalConsumption model =
-    model.peakHours + model.offPeakHours
+getConsumption : Metering -> Int
+getConsumption m =
+    m.peakHoursConsumption + m.offPeakHoursConsumption
 
 
 
@@ -32,49 +36,39 @@ type Msg
     = NoOp
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    ( model, Cmd.none )
+update : Msg -> Metering -> ( Metering, Cmd Msg )
+update msg metering =
+    ( metering, Cmd.none )
 
 
 
 ---- VIEW ----
 
 
-presentConsumption : Int -> String -> String
-presentConsumption consumption title =
-    title
+presentEnergy : String -> Int -> String
+presentEnergy label amount =
+    label
         ++ " "
-        ++ (String.fromInt consumption)
+        ++ (String.fromInt amount)
         ++ " kWh"
 
 
-view : Model -> Html Msg
-view model =
-    let
-        peakHours =
-            presentConsumption model.peakHours "Peak"
-
-        offPeakHours =
-            presentConsumption model.offPeakHours "Off-peak"
-
-        total =
-            presentConsumption (totalConsumption model) "Total"
-    in
-        div []
-            [ h1 [] [ text "Last meter record" ]
-            , img [ src "/signal-vs-noise.png" ] []
-            , p [] [ text peakHours ]
-            , p [] [ text offPeakHours ]
-            , h3 [] [ text total ]
-            ]
+view : Metering -> Html Msg
+view m =
+    div []
+        [ h1 [] [ text "Last meter record" ]
+        , img [ src "/signal-vs-noise.png" ] []
+        , p [] [ text (presentEnergy "Peak" m.peakHoursConsumption) ]
+        , p [] [ text (presentEnergy "Off-peak" m.offPeakHoursConsumption) ]
+        , h3 [] [ text (presentEnergy "Total" (getConsumption m)) ]
+        ]
 
 
 
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program () Metering Msg
 main =
     Browser.element
         { view = view
